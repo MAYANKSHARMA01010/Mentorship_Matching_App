@@ -1,7 +1,7 @@
 "use client";
 
-import HomePage from "../../app/(pages)/HomePage";
-import Onboarding from "../../(pages)/Onboarding";
+import HomePage from "./(pages)/HomePage";
+import Onboarding from "./(pages)/Onboarding";
 
 export default function OnboardingPage() {
   return (

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export default function HomePage() {
+export default function page() {
   // Default dark mode
   const [darkMode, setDarkMode] = useState(true);
 
