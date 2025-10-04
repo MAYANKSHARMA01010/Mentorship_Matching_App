@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String         @id @default(uuid())
+  name      String
+  email     String         @unique
+  role      String
+  bio       String?
+  timezone  String?
+  availability Json?
+  skills    Json?
+  createdAt DateTime       @default(now())
+
+  sentRequests     MatchRequest[] @relation("MenteeRequests")
+  receivedRequests MatchRequest[] @relation("MentorRequests")
+  messages         Message[]
+}
+
+model MatchRequest {
+  id        String   @id @default(uuid())
+  menteeId  String
+  mentorId  String
+  status    String
+  note      String?
+  createdAt DateTime @default(now())
+
+  mentee   User @relation("MenteeRequests", fields: [menteeId], references: [id])
+  mentor   User @relation("MentorRequests", fields: [mentorId], references: [id])
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  matchId   String
+  senderId  String
+  text      String
+  createdAt DateTime @default(now())
+
+  match  MatchRequest @relation(fields: [matchId], references: [id])
+  sender User         @relation(fields: [senderId], references: [id])
+}
