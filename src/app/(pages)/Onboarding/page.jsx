@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import COMMON_SKILLS from "../data/skills";
-import TIMEZONES from "../data/timezone";
+import COMMON_SKILLS from "../../data/skills";
+import TIMEZONES from "../../data/timezone";
 
 export default function page() {
     const AVAILABILITY_OPTIONS = [
