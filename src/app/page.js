@@ -1,8 +1,13 @@
-import HomePage from "./(pages)/HomePage";
-export default function Home() {
+"use client";
+
+import HomePage from "../../app/(pages)/HomePage";
+import Onboarding from "../../(pages)/Onboarding";
+
+export default function OnboardingPage() {
   return (
-    <div>
-        <HomePage/>
+    <div> 
+    <HomePage />
+    <Onboarding />
     </div>
   );
 }
