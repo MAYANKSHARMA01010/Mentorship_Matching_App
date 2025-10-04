@@ -13,42 +13,145 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ====================
+// Users
+// ====================
 model User {
-  id        String         @id @default(uuid())
+  id        String   @id @default(cuid())
   name      String
-  email     String         @unique
-  role      String
+  username  String   @unique
+  email     String?  @unique
+  githubId  String   @unique
   bio       String?
-  timezone  String?
-  availability Json?
-  skills    Json?
-  createdAt DateTime       @default(now())
-
-  sentRequests     MatchRequest[] @relation("MenteeRequests")
-  receivedRequests MatchRequest[] @relation("MentorRequests")
-  messages         Message[]
-}
-
-model MatchRequest {
-  id        String   @id @default(uuid())
-  menteeId  String
-  mentorId  String
-  status    String
-  note      String?
+  avatarUrl String?
+  skills    String[] // Multiple skills
+  role      Role // MENTOR or MENTEE
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  mentee   User @relation("MenteeRequests", fields: [menteeId], references: [id])
-  mentor   User @relation("MentorRequests", fields: [mentorId], references: [id])
-  messages Message[]
+  // Relations
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+  following        UserFollow[]    @relation("Follower")
+  followers        UserFollow[]    @relation("Following")
+  messagesSent     Message[]       @relation("Sender")
+  messagesReceived Message[]       @relation("Receiver")
+  groupsMember     GroupMember[]
+  groupsCreated    Group[]         @relation("GroupsCreated")
+  readMessages     MessageRead[]
+  mentorProfile    MentorProfile?
+
+  // Friends / connections
+  mentorFriends UserFriend[] @relation("MentorFriend")
+  menteeFriends UserFriend[] @relation("MenteeFriend")
 }
 
+enum Role {
+  MENTOR
+  MENTEE
+}
+
+// ====================
+// User Friends / Connections
+// ====================
+model UserFriend {
+  id        String   @id @default(cuid())
+  user      User     @relation("MentorFriend", fields: [userId], references: [id])
+  userId    String
+  friend    User     @relation("MenteeFriend", fields: [friendId], references: [id])
+  friendId  String
+  createdAt DateTime @default(now())
+}
+
+// ====================
+// User Follow
+// ====================
+model UserFollow {
+  id          String   @id @default(cuid())
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  followerId  String
+  following   User     @relation("Following", fields: [followingId], references: [id])
+  followingId String
+  createdAt   DateTime @default(now())
+}
+
+// ====================
+// Friend / Mentorship Requests
+// ====================
+model FriendRequest {
+  id         String        @id @default(cuid())
+  sender     User          @relation("SentRequests", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User          @relation("ReceivedRequests", fields: [receiverId], references: [id])
+  receiverId String
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// ====================
+// Messages (Direct & Group)
+// ====================
 model Message {
-  id        String   @id @default(uuid())
-  matchId   String
-  senderId  String
-  text      String
-  createdAt DateTime @default(now())
+  id         String        @id @default(cuid())
+  content    String
+  sender     User          @relation("Sender", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User?         @relation("Receiver", fields: [receiverId], references: [id])
+  receiverId String? // null if group message
+  group      Group?        @relation(fields: [groupId], references: [id])
+  groupId    String?
+  createdAt  DateTime      @default(now())
+  readBy     MessageRead[]
+}
 
-  match  MatchRequest @relation(fields: [matchId], references: [id])
-  sender User         @relation(fields: [senderId], references: [id])
+// ====================
+// Message Read Receipts
+// ====================
+model MessageRead {
+  id        String   @id @default(cuid())
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  readAt    DateTime @default(now())
+}
+
+// ====================
+// Groups (Mentor-created)
+// ====================
+model Group {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  createdBy   User          @relation("GroupsCreated", fields: [createdById], references: [id])
+  createdById String
+  createdAt   DateTime      @default(now())
+  members     GroupMember[]
+  messages    Message[]
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  user     User     @relation(fields: [userId], references: [id])
+  userId   String
+  group    Group    @relation(fields: [groupId], references: [id])
+  groupId  String
+  joinedAt DateTime @default(now())
+}
+
+// ====================
+// Mentor Profile / Badges
+// ====================
+model MentorProfile {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  expertise String[]
+  rating    Float?
 }
