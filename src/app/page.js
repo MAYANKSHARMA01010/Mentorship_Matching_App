@@ -1,10 +1,13 @@
-// import HomePage from "./(pages)/HomePage";
-import MentorDashboard from "../app/(pages)/MentorDashboard"
-export default function Home() {
+"use client";
+
+import HomePage from "./(pages)/HomePage";
+import Onboarding from "./(pages)/Onboarding";
+
+export default function OnboardingPage() {
   return (
-    <div>
-        {/* <HomePage/> */}
-        <MentorDashboard/>
+    <div> 
+    <HomePage />
+    <Onboarding />
     </div>
   );
 }
