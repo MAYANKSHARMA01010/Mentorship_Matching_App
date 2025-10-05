@@ -14,144 +14,110 @@ generator client {
 }
 
 // ====================
-// Users
+// Mentor
 // ====================
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  username  String   @unique
-  email     String?  @unique
-  githubId  String   @unique
-  bio       String?
-  avatarUrl String?
-  skills    String[] // Multiple skills
-  role      Role // MENTOR or MENTEE
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Mentor {
+  id         String   @id @default(cuid())
+  name       String
+  username   String   @unique
+  email      String?  @unique
+  githubId   String   @unique
+  githubName String?
+  bio        String?
+  avatarUrl  String?
+  skills     String[] // multiple skills
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  // Relations
-  sentRequests     FriendRequest[] @relation("SentRequests")
-  receivedRequests FriendRequest[] @relation("ReceivedRequests")
-  following        UserFollow[]    @relation("Follower")
-  followers        UserFollow[]    @relation("Following")
-  messagesSent     Message[]       @relation("Sender")
-  messagesReceived Message[]       @relation("Receiver")
-  groupsMember     GroupMember[]
-  groupsCreated    Group[]         @relation("GroupsCreated")
-  readMessages     MessageRead[]
-  mentorProfile    MentorProfile?
-
-  // Friends / connections
-  mentorFriends UserFriend[] @relation("MentorFriend")
-  menteeFriends UserFriend[] @relation("MenteeFriend")
-}
-
-enum Role {
-  MENTOR
-  MENTEE
+  mentees      Mentee[]       @relation("MentorMentees")
+  messages     Message[]      @relation("MentorMessages")
+  groups       Group[]        @relation("GroupsCreated")
+  friends      MentorFriend[] @relation("MentorFriends")
+  GroupMember  GroupMember[]
+  MentorFriend MentorFriend[]
 }
 
 // ====================
-// User Friends / Connections
+// Mentee
 // ====================
-model UserFriend {
-  id        String   @id @default(cuid())
-  user      User     @relation("MentorFriend", fields: [userId], references: [id])
-  userId    String
-  friend    User     @relation("MenteeFriend", fields: [friendId], references: [id])
-  friendId  String
-  createdAt DateTime @default(now())
+model Mentee {
+  id         String   @id @default(cuid())
+  name       String
+  username   String   @unique
+  email      String?  @unique
+  githubId   String   @unique
+  githubName String?
+  bio        String?
+  avatarUrl  String?
+  skills     String[] // mentees can also list skills
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  mentor      Mentor        @relation("MentorMentees", fields: [mentorId], references: [id])
+  mentorId    String
+  messages    Message[]     @relation("MenteeMessages")
+  GroupMember GroupMember[]
 }
 
 // ====================
-// User Follow
-// ====================
-model UserFollow {
-  id          String   @id @default(cuid())
-  follower    User     @relation("Follower", fields: [followerId], references: [id])
-  followerId  String
-  following   User     @relation("Following", fields: [followingId], references: [id])
-  followingId String
-  createdAt   DateTime @default(now())
-}
-
-// ====================
-// Friend / Mentorship Requests
-// ====================
-model FriendRequest {
-  id         String        @id @default(cuid())
-  sender     User          @relation("SentRequests", fields: [senderId], references: [id])
-  senderId   String
-  receiver   User          @relation("ReceivedRequests", fields: [receiverId], references: [id])
-  receiverId String
-  status     RequestStatus @default(PENDING)
-  createdAt  DateTime      @default(now())
-}
-
-enum RequestStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
-// ====================
-// Messages (Direct & Group)
+// Messages
 // ====================
 model Message {
-  id         String        @id @default(cuid())
-  content    String
-  sender     User          @relation("Sender", fields: [senderId], references: [id])
-  senderId   String
-  receiver   User?         @relation("Receiver", fields: [receiverId], references: [id])
-  receiverId String? // null if group message
-  group      Group?        @relation(fields: [groupId], references: [id])
-  groupId    String?
-  createdAt  DateTime      @default(now())
-  readBy     MessageRead[]
-}
-
-// ====================
-// Message Read Receipts
-// ====================
-model MessageRead {
   id        String   @id @default(cuid())
-  message   Message  @relation(fields: [messageId], references: [id])
-  messageId String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  readAt    DateTime @default(now())
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  mentor   Mentor? @relation("MentorMessages", fields: [mentorId], references: [id])
+  mentorId String?
+
+  mentee   Mentee? @relation("MenteeMessages", fields: [menteeId], references: [id])
+  menteeId String?
+
+  group   Group?  @relation(fields: [groupId], references: [id])
+  groupId String?
 }
 
 // ====================
-// Groups (Mentor-created)
+// Groups (mentors can create)
 // ====================
 model Group {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
   description String?
-  createdBy   User          @relation("GroupsCreated", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  createdBy   Mentor @relation("GroupsCreated", fields: [createdById], references: [id])
   createdById String
-  createdAt   DateTime      @default(now())
-  members     GroupMember[]
-  messages    Message[]
+
+  members  GroupMember[]
+  messages Message[]
 }
 
+// ====================
+// Group Membership
+// ====================
 model GroupMember {
   id       String   @id @default(cuid())
-  user     User     @relation(fields: [userId], references: [id])
-  userId   String
-  group    Group    @relation(fields: [groupId], references: [id])
-  groupId  String
   joinedAt DateTime @default(now())
+
+  mentor   Mentor? @relation(fields: [mentorId], references: [id])
+  mentorId String?
+
+  mentee   Mentee? @relation(fields: [menteeId], references: [id])
+  menteeId String?
+
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
 }
 
 // ====================
-// Mentor Profile / Badges
+// Mentor–Mentor Friendships
 // ====================
-model MentorProfile {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  expertise String[]
-  rating    Float?
+model MentorFriend {
+  id       String @id @default(cuid())
+  mentor   Mentor @relation("MentorFriends", fields: [mentorId], references: [id])
+  mentorId String
+  friend   Mentor @relation(fields: [friendId], references: [id])
+  friendId String
 }
