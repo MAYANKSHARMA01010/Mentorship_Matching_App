@@ -1,56 +1,85 @@
 "use client";
+import { useMemo, useEffect, useCallback } from "react";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+// --- THEME DEFINITIONS
+const DARK_THEME = {
+  primary: "#5f50f5",
+  accent: "#06b6d4",
+  bg: "#121212",
+  card: "#1e1e1e",
+  text: "#f0f0f0",
+  danger: "#f87171",
+  gray_border: "#374151",
+};
 
+const LIGHT_THEME = {
+  primary: "#5f50f5",
+  accent: "#06b6d4",
+  bg: "#f3f4f6",
+  card: "#ffffff",
+  text: "#1f2937",
+  danger: "#dc2626",
+  gray_border: "#e5e7eb",
+};
+
+// --- MOCK DATA
+const MOCK_CONNECTIONS = [
+  { id: "m1", name: "Rohan Mehta", role: "Mentor" },
+  { id: "s1", name: "Neha Patel", role: "Student" },
+  { id: "m2", name: "Sara Khan", role: "Mentor" },
+  { id: "s2", name: "Aarav Sharma", role: "Student" },
+];
+
+// --- MAIN COMPONENT
 export default function ChatPage({
-  connections = [],
+  connections = MOCK_CONNECTIONS,
   activeChatId,
-  setActiveChatId,
+  setActiveChatId = () => {},
   currentTheme,
 }) {
-  const theme = currentTheme;
+  const theme = currentTheme || LIGHT_THEME;
 
-  // Messages state: store per contact
-  const [messages, setMessages] = useState({});
-
-  const messagesEndRef = useRef(null);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, activeChatId]);
-
-  // Generate contacts list
   const contacts = useMemo(
     () =>
       connections.map((c) => ({
-        ...c,
+        id: c.id,
+        name: `${c.name} (${c.role})`,
         status: c.id === "m1" ? "Online" : "Offline",
-        lastMsg: messages[c.id]?.[messages[c.id].length - 1]?.text || "No messages yet.",
+        lastMsg: `Last message from ${c.name}.`,
         avatarBg: c.role === "Mentor" ? theme.primary : theme.accent,
       })),
-    [connections, messages, theme]
+    [connections, theme]
   );
+
+  useEffect(() => {
+    if (!activeChatId && contacts.length > 0) {
+      setActiveChatId(contacts[0].id);
+    } else if (activeChatId && !contacts.some((c) => c.id === activeChatId)) {
+      setActiveChatId(contacts.length > 0 ? contacts[0].id : null);
+    }
+  }, [contacts, activeChatId, setActiveChatId]);
 
   const activeContact = useMemo(
-    () => contacts.find((c) => c.id === activeChatId) || contacts[0] || null,
-    [contacts, activeChatId]
+    () =>
+      contacts.find((c) => c.id === activeChatId) ||
+      (contacts.length > 0 ? contacts[0] : null),
+    [activeChatId, contacts]
   );
 
-  const [input, setInput] = useState("");
+  const getMockMessages = useCallback((name) => {
+    if (!name) return [];
+    return [
+      { id: 1, text: `Hello ${name}, ready for our check-in?`, time: "10:00 AM", sender: "self" },
+      { id: 2, text: `Absolutely! I've prepared the architectural diagrams.`, time: "10:01 AM", sender: "other" },
+      { id: 3, text: `Great! Have you started on the next assignment?`, time: "10:05 AM", sender: "self" },
+      { id: 4, text: `Yes, I implemented the new feature using the message queue pattern.`, time: "10:06 AM", sender: "other" },
+    ];
+  }, []);
 
-  const handleSendMessage = () => {
-    if (!input.trim() || !activeContact) return;
-
-    setMessages((prev) => ({
-      ...prev,
-      [activeContact.id]: [
-        ...(prev[activeContact.id] || []),
-        { sender: "self", text: input, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
-      ],
-    }));
-    setInput("");
-  };
+  const messages = useMemo(
+    () => (activeContact ? getMockMessages(activeContact.name) : []),
+    [activeContact, getMockMessages]
+  );
 
   if (connections.length === 0) {
     return (
@@ -70,8 +99,10 @@ export default function ChatPage({
       <h2 className="text-3xl font-bold mb-6" style={{ color: theme.text }}>
         Real-Time Messaging
       </h2>
-
-      <div className="flex h-[80vh] rounded-2xl shadow-2xl overflow-hidden border" style={{ borderColor: theme.gray_border }}>
+      <div
+        className="flex h-[80vh] rounded-2xl shadow-2xl overflow-hidden border"
+        style={{ borderColor: theme.gray_border }}
+      >
         {/* Left Panel: Contacts */}
         <div className="w-full md:w-1/3 flex-shrink-0 overflow-y-auto" style={{ backgroundColor: theme.card }}>
           <div className="p-4 border-b" style={{ borderColor: theme.gray_border }}>
@@ -79,7 +110,6 @@ export default function ChatPage({
               Connections
             </h3>
           </div>
-
           {contacts.map((contact) => (
             <div
               key={contact.id}
@@ -139,8 +169,8 @@ export default function ChatPage({
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {(messages[activeContact.id] || []).map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.sender === "self" ? "justify-end" : "justify-start"}`}>
+                {messages.map((msg) => (
+                  <div key={msg.id} className={`flex ${msg.sender === "self" ? "justify-end" : "justify-start"}`}>
                     <div
                       className={`max-w-xs md:max-w-md p-3 rounded-xl shadow-lg ${
                         msg.sender === "self" ? "text-white rounded-br-none" : "rounded-tl-none"
@@ -151,13 +181,16 @@ export default function ChatPage({
                       }}
                     >
                       <p className="text-sm">{msg.text}</p>
-                      <span className={`block text-right mt-1 text-xs ${msg.sender === "self" ? "text-white/70" : "text-gray-400"}`}>
+                      <span
+                        className={`block text-right mt-1 text-xs ${
+                          msg.sender === "self" ? "text-white/70" : "text-gray-400"
+                        }`}
+                      >
                         {msg.time}
                       </span>
                     </div>
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input */}
@@ -176,16 +209,21 @@ export default function ChatPage({
                     "--tw-ring-color": theme.primary,
                     "--tw-ring-offset-color": theme.card,
                   }}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                 />
                 <button
                   className="ml-3 px-5 py-3 rounded-xl text-white font-semibold flex items-center justify-center transition shadow-md hover:opacity-90"
                   style={{ backgroundColor: theme.accent }}
-                  onClick={handleSendMessage}
                 >
-                  Send
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
             </>

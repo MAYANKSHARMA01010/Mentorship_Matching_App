@@ -1,11 +1,30 @@
 "use client";
 
+// --- Mock Data (Expanded)
+const MOCK_CONNECTIONS = [
+  { id: "m1", name: "Ananya Gupta", role: "Frontend Developer" },
+  { id: "m2", name: "Rohan Mehta", role: "Backend Engineer" },
+  { id: "m3", name: "Sara Khan", role: "UX Designer" },
+  { id: "m4", name: "Aarav Sharma", role: "Fullstack Developer" },
+  { id: "m5", name: "Neha Patel", role: "Data Scientist" },
+  { id: "m6", name: "Vikram Singh", role: "AI Engineer" },
+  { id: "m7", name: "Priya Reddy", role: "Product Manager" },
+  { id: "m8", name: "Aditya Joshi", role: "Mobile Developer" },
+  { id: "m9", name: "Isha Verma", role: "DevOps Engineer" },
+  { id: "m10", name: "Karan Mehra", role: "UI/UX Designer" },
+  { id: "m11", name: "Sanya Kapoor", role: "Software Tester" },
+  { id: "m12", name: "Ritik Sharma", role: "Cloud Engineer" },
+];
+
+// --- Accepted Connections (minimum 2)
+const ACCEPTED_CONNECTIONS = [MOCK_CONNECTIONS[0], MOCK_CONNECTIONS[1]];
+
 // --- Connections Component
 export default function ConnectionsPage({
   currentTheme,
-  connections = [],
-  handleDisconnect,
-  handleMessage,
+  connections = ACCEPTED_CONNECTIONS, // Default: first two accepted
+  handleDisconnect = (id) => console.log("Disconnect", id),
+  handleMessage = (mentor) => console.log("Message", mentor.name),
 }) {
   return (
     <div
@@ -17,13 +36,13 @@ export default function ConnectionsPage({
       </h2>
 
       {connections.length === 0 ? (
-        <p className="text-gray-500">You have no active connections yet.</p>
+        <p className="text-gray-400">You have no active connections yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {connections.map((mentor) => (
             <div
               key={mentor.id}
-              className="p-6 rounded-2xl shadow-xl flex flex-col justify-between border transition duration-300 hover:shadow-lg"
+              className="p-6 rounded-2xl shadow-xl flex flex-col justify-between border transition duration-300 hover:shadow-2xl"
               style={{
                 backgroundColor: currentTheme.card,
                 borderColor: currentTheme.gray_border,
