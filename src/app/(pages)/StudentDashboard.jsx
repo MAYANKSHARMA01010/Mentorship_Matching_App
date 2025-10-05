@@ -199,7 +199,7 @@ const StudentDashboard = () => {
           className="text-2xl font-bold mb-8"
           style={{ color: currentTheme.primary }}
         >
-          MentorHub
+          StudentHub
         </div>
         <nav className="flex-grow">
           {navItems.map((item) => (
