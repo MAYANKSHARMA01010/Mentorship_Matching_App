@@ -1,5 +1,5 @@
 "use client";
-import { Icon } from "../Icon/Icon";
+import { Icon } from "../../data/Icon";
 
 // --- Requests Component
 export default function RequestPage({

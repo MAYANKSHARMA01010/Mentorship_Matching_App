@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Icon } from "../components/Icon/Icon";
+import { Icon } from "../data/Icon";
 
 // Import pages
 import Page from "../components/StudentDashboard/pages";

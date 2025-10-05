@@ -3,6 +3,7 @@
 import HomePage from "./(pages)/HomePage";
 import Onboarding from "./(pages)/Onboarding";
 import MentorDashboard from "./(pages)/MentorDashboard"
+import StudentDashboard from "./(pages)/StudentDashboard";
 
 export default function OnboardingPage() {
   return (
@@ -10,6 +11,7 @@ export default function OnboardingPage() {
     <HomePage />
     <Onboarding />
     <MentorDashboard />
+    <StudentDashboard />
     </div>
   );
 }
