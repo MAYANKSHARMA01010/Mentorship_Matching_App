@@ -1,8 +1,10 @@
-import HomePage from "./(pages)/HomePage";
+// import HomePage from "./(pages)/HomePage";
+import MentorDashboard from "../app/(pages)/MentorDashboard"
 export default function Home() {
   return (
     <div>
-        <HomePage/>
+        {/* <HomePage/> */}
+        <MentorDashboard/>
     </div>
   );
 }
