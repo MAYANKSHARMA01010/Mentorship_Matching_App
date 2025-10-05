@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Icon } from "../Icon/Icon";
+import { Icon } from "../../data/Icon";
 
 // --- THEME DEFINITIONS ---
 const DARK_THEME = {
