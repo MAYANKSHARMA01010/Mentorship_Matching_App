@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useCallback } from "react";
-import { Icon } from "../components/Icon/Icon";
+import { Icon } from "../data/Icon";
 
 // Import your page components
 import Page from "../components/MentorDashboard/Page";
