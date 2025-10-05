@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { Icon } from "../Icon/Icon"; // Adjust path if needed
+import { Icon } from "../../data/Icon";
 
 // --- Mock Mentors Data
 const MENTOR_MOCK_DATA = [
